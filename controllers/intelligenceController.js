@@ -1,4 +1,3 @@
-
 const IntelligenceReport = require("../models/IntelligenceReport");
 const { runIntelligencePipeline } = require("../intelligence/intelligenceEngine");
 
@@ -29,8 +28,11 @@ const runIntelligence = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Intelligence Error:", error.message);
-    res.status(500).json({ message: "Intelligence Engine Failed" });
+    console.error("INTELLIGENCE ERROR:", error);
+    res.status(500).json({
+      message: "Intelligence Engine Failed",
+      error: error.message,
+    });
   }
 };
 
