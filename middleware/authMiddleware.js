@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 const BlacklistedToken = require("../models/BlacklistedToken");
 
 const protect = async (req, res, next) => {
@@ -15,7 +16,7 @@ const protect = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    // 2️⃣ Check if token is blacklisted (IMPORTANT 🔥)
+    // 2️⃣ Check if token is blacklisted
     const blacklisted = await BlacklistedToken.findOne({ token });
     if (blacklisted) {
       return res.status(401).json({
@@ -27,7 +28,18 @@ const protect = async (req, res, next) => {
     // 3️⃣ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded;
+    // 4️⃣ Fetch full user from DB
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // 5️⃣ Attach full user object
+    req.user = user;
 
     next();
 
@@ -40,4 +52,3 @@ const protect = async (req, res, next) => {
 };
 
 module.exports = protect;
-
