@@ -31,10 +31,12 @@ app.use("/api", limiter);
 const authRoutes = require("./routes/authRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const intelligenceRoutes = require("./routes/intelligenceRoutes");
+const intelligenceHistoryRoutes = require("./routes/intelligenceHistoryRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/intelligence", intelligenceRoutes);
+app.use("/api/intelligence/history", intelligenceHistoryRoutes);
 
 /* =========================================
    TEST ROUTE
