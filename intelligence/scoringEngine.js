@@ -1,6 +1,7 @@
-// intelligence/scoringEngine.js
+const calculateDailyScore = (data = {}) => {
+  const tasksCompleted = Number(data.tasksCompleted) || 0;
+  const totalTasks = Number(data.totalTasks) || 0;
 
-const calculateDailyScore = ({ tasksCompleted, totalTasks, focusHours }) => {
   const completionRate =
     totalTasks === 0 ? 0 : tasksCompleted / totalTasks;
 
@@ -12,11 +13,11 @@ const calculateDailyScore = ({ tasksCompleted, totalTasks, focusHours }) => {
   };
 };
 
-const calculateWeeklyScore = ({
-  completionRate,
-  consistencyScore,
-  burnoutScore,
-}) => {
+const calculateWeeklyScore = (data = {}) => {
+  const completionRate = Number(data.completionRate) || 0;
+  const consistencyScore = Number(data.consistencyScore) || 0;
+  const burnoutScore = Number(data.burnoutScore) || 0;
+
   const weeklyScore =
     completionRate * 0.5 +
     consistencyScore * 0.3 +
