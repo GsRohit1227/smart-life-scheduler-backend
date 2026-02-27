@@ -189,7 +189,37 @@ router.get(
     });
   })
 );
+   /* =========================================
+   TOGGLE TASK COMPLETE (PATCH)
+========================================= */
+router.patch(
+  "/:id",
+  protect,
+  asyncHandler(async (req, res) => {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
 
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+
+    if (req.body.completed !== undefined) {
+      task.completed = req.body.completed;
+    }
+
+    await task.save();
+
+    res.status(200).json({
+      success: true,
+      task,
+    });
+  })
+);
 /* =========================================
    SMART AUTO RESCHEDULE (VERSION 2)
 ========================================= */
