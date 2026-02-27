@@ -1,8 +1,9 @@
+require("dotenv").config();  
+
 const helmet = require("helmet");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-require("dotenv").config();
 
 const limiter = require("./middleware/rateLimiter");
 const startAutoRescheduler = require("./Jobs/autoRescheduler"); 
@@ -16,7 +17,7 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "*",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })

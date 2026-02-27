@@ -125,7 +125,7 @@ router.get(
       limit = 5,
     } = req.query;
 
-    let filter = { user: req.user.id };
+    let filter = { user: req.user._id };
 
     if (completed !== undefined) {
       filter.completed = completed === "true";
