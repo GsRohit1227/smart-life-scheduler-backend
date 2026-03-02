@@ -1,10 +1,14 @@
 const IntelligenceReport = require("../models/IntelligenceReport");
-const { runIntelligencePipeline } = require("../intelligence/intelligenceEngine");
-
-const calculateAdvancedAnalytics = require("../services/advancedAnalyticsService");
 const IntelligenceHistory = require("../models/IntelligenceHistory");
+const Task = require("../models/Task");
+
+const { runIntelligencePipeline } = require("../intelligence/intelligenceEngine");
+const calculateAdvancedAnalytics = require("../services/advancedAnalyticsService");
 const adaptiveReschedule = require("../services/adaptiveSchedulerService");
 
+/* =====================================================
+   RUN FULL INTELLIGENCE PIPELINE
+===================================================== */
 const runIntelligence = async (req, res) => {
   try {
     const {
@@ -23,7 +27,6 @@ const runIntelligence = async (req, res) => {
       last30Days,
     });
 
-    // 🔥 Save original intelligence report
     await IntelligenceReport.create({
       user: req.user._id,
       dailyScore: intelligenceReport.dailyScore,
@@ -33,7 +36,6 @@ const runIntelligence = async (req, res) => {
       scheduleAdjustments: intelligenceReport.scheduleAdjustments,
     });
 
-    // ✅ Safe analytics calculation
     const analytics = calculateAdvancedAnalytics(
       tasks || [],
       healthData || {}
@@ -52,13 +54,11 @@ const runIntelligence = async (req, res) => {
       },
     });
 
-    // 🎯 STEP 2 — Adaptive Scheduling Integration
     const rescheduleResult = adaptiveReschedule(
       tasks || [],
       healthData?.energyLevel || "medium"
     );
 
-    // ✅ Return everything
     res.json({
       baseIntelligence: intelligenceReport,
       advancedAnalytics: savedReport,
@@ -74,6 +74,111 @@ const runIntelligence = async (req, res) => {
   }
 };
 
+/* =====================================================
+   ANALYTICS: SUMMARY
+===================================================== */
+const getSummary = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const totalTasks = await Task.countDocuments({ user: userId });
+
+    const completed = await Task.countDocuments({
+      user: userId,
+      completed: true,
+    });
+
+    const pending = await Task.countDocuments({
+      user: userId,
+      completed: false,
+    });
+
+    const overdue = await Task.countDocuments({
+      user: userId,
+      completed: false,
+      deadline: { $lt: new Date() },
+    });
+
+    res.json({
+      totalTasks,
+      completed,
+      pending,
+      overdue,
+    });
+
+  } catch (error) {
+    console.error("SUMMARY ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch summary" });
+  }
+};
+
+/* =====================================================
+   ANALYTICS: PRODUCTIVITY
+===================================================== */
+const getProductivity = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const total = await Task.countDocuments({ user: userId });
+
+    const completed = await Task.countDocuments({
+      user: userId,
+      completed: true,
+    });
+
+    const score = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+    res.json({ score });
+
+  } catch (error) {
+    console.error("PRODUCTIVITY ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch productivity" });
+  }
+};
+
+/* =====================================================
+   ANALYTICS: RECOMMENDATIONS
+===================================================== */
+const getRecommendations = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const pendingTasks = await Task.countDocuments({
+      user: userId,
+      completed: false,
+    });
+
+    let recommendations = [];
+
+    if (pendingTasks > 5) {
+      recommendations.push(
+        "You have many pending tasks. Try prioritizing high-impact tasks."
+      );
+    }
+
+    if (pendingTasks === 0) {
+      recommendations.push(
+        "Great job! You are fully on track."
+      );
+    }
+
+    if (recommendations.length === 0) {
+      recommendations.push(
+        "Maintain steady productivity to improve your performance."
+      );
+    }
+
+    res.json({ recommendations });
+
+  } catch (error) {
+    console.error("RECOMMENDATION ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch recommendations" });
+  }
+};
+
 module.exports = {
   runIntelligence,
+  getSummary,
+  getProductivity,
+  getRecommendations,
 };

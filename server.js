@@ -25,7 +25,7 @@ app.use(
 );
 
 app.use(express.json());
-app.use("/api", limiter);
+app.use("/api/auth", limiter);
 
 /* =========================================
    ROUTES
