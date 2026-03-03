@@ -108,22 +108,14 @@ const router = express.Router();
     });
   })
 );
-
-/* =========================================
-   GET ALL TASKS
+  /* =========================================
+   GET ALL TASKS (NO PAGINATION)
 ========================================= */
 router.get(
   "/",
   protect,
   asyncHandler(async (req, res) => {
-    const {
-      completed,
-      date,
-      from,
-      to,
-      page = 1,
-      limit = 5,
-    } = req.query;
+    const { completed, date, from, to } = req.query;
 
     let filter = { user: req.user._id };
 
@@ -135,7 +127,6 @@ router.get(
       const start = new Date(date);
       const end = new Date(date);
       end.setHours(23, 59, 59, 999);
-
       filter.date = { $gte: start, $lte: end };
     }
 
@@ -146,24 +137,15 @@ router.get(
       };
     }
 
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
-
-    const tasks = await Task.find(filter)
-      .sort({ createdAt: -1 })
-      .skip((pageNumber - 1) * limitNumber)
-      .limit(limitNumber);
-
-    const total = await Task.countDocuments(filter);
+    const tasks = await Task.find(filter).sort({ createdAt: -1 });
 
     res.status(200).json({
-      totalTasks: total,
-      currentPage: pageNumber,
-      totalPages: Math.ceil(total / limitNumber),
+      totalTasks: tasks.length,
       tasks,
     });
-})
+  })
 );
+
    /* =========================================
    GET SINGLE TASK
 ========================================= */

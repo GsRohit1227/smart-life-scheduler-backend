@@ -34,11 +34,13 @@ const authRoutes = require("./routes/authRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const intelligenceRoutes = require("./routes/intelligenceRoutes");
 const intelligenceHistoryRoutes = require("./routes/intelligenceHistoryRoutes");
+const chatRoutes = require("./routes/chatRoutes"); // ✅ Added
 
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/intelligence", intelligenceRoutes);
 app.use("/api/intelligence/history", intelligenceHistoryRoutes);
+app.use("/api/chat", chatRoutes); // ✅ Added
 
 /* =========================================
    TEST ROUTE
